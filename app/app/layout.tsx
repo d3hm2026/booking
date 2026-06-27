@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
+import { Tajawal } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
+
+const tajawal = Tajawal({
+  subsets: ["arabic"],
+  weight: ["400", "500", "700"],
+  variable: "--font-tajawal",
+});
 
 export const metadata: Metadata = {
   title: "نظام إدارة الاستراحات والشاليهات",
@@ -13,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl" className="h-full antialiased">
+    <html lang="ar" dir="rtl" className={`h-full antialiased ${tajawal.variable}`}>
       <body className="min-h-full flex flex-col font-sans">
         {children}
         <Toaster

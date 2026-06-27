@@ -45,7 +45,8 @@ export function ExpensesTable({ expenses, units }: ExpensesTableProps) {
       </div>
 
       <Card className="overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[640px]">
           <thead className="bg-gray-50 text-gray-500 border-b border-gray-200">
             <tr>
               <th className="text-right px-4 py-3 font-medium">التاريخ</th>
@@ -93,6 +94,7 @@ export function ExpensesTable({ expenses, units }: ExpensesTableProps) {
             ))}
           </tbody>
         </table>
+        </div>
 
         {expenses.length === 0 && (
           <div className="p-10 text-center text-gray-400 text-sm">

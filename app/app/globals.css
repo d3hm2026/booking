@@ -13,7 +13,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  font-family: var(--font-tajawal), "Segoe UI", Tahoma, Arial, sans-serif;
 }
 
 * {

@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  LayoutDashboard,
   Calendar,
+  ClipboardList,
   Building2,
   Users,
   Wallet,
@@ -11,9 +13,12 @@ import {
   LogOut,
 } from "lucide-react";
 import { logoutAction } from "@/app/actions/auth";
+import { MobileNav } from "./mobile-nav";
 
 const LINKS = [
-  { href: "/admin", label: "التقويم", icon: Calendar },
+  { href: "/admin", label: "الرئيسية", icon: LayoutDashboard },
+  { href: "/admin/calendar", label: "التقويم", icon: Calendar },
+  { href: "/admin/bookings", label: "الحجوزات", icon: ClipboardList },
   { href: "/admin/units", label: "الوحدات", icon: Building2 },
   { href: "/admin/users", label: "المستخدمين", icon: Users },
   { href: "/admin/expenses", label: "المصروفات", icon: Wallet },
@@ -31,7 +36,7 @@ export function AdminShell({
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <aside className="w-60 shrink-0 border-l border-gray-200 bg-white flex flex-col">
+      <aside className="hidden md:flex w-60 shrink-0 border-l border-gray-200 bg-white flex-col">
         <div className="px-5 py-5 border-b border-gray-100 flex items-center gap-2.5">
           <div className="bg-indigo-600 text-white rounded-lg p-2 shrink-0">
             <Building2 className="size-5" />
@@ -83,8 +88,9 @@ export function AdminShell({
         </div>
       </aside>
 
-      <div className="flex-1 min-w-0">
-        <main className="p-6 max-w-7xl mx-auto w-full animate-fade-in">
+      <div className="flex-1 min-w-0 flex flex-col">
+        <MobileNav fullName={fullName} />
+        <main className="flex-1 p-4 sm:p-6 pb-24 md:pb-6 max-w-7xl mx-auto w-full animate-fade-in">
           {children}
         </main>
       </div>

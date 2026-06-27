@@ -113,7 +113,8 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
       </div>
 
       <Card className="overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[560px]">
           <thead className="bg-gray-50 text-gray-500 border-b border-gray-200">
             <tr>
               <th className="text-right px-4 py-3 font-medium">الوحدة</th>
@@ -174,6 +175,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
             </tfoot>
           )}
         </table>
+        </div>
 
         {report.rows.length === 0 && (
           <div className="p-10 text-center text-gray-400 text-sm">
