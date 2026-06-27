@@ -17,6 +17,7 @@ interface BookingCalendarProps {
   bookings: Booking[];
   startDate: string;
   daysCount: number;
+  readOnly?: boolean;
 }
 
 const ROW_HEIGHT = 44;
@@ -28,6 +29,7 @@ export function BookingCalendar({
   bookings,
   startDate,
   daysCount,
+  readOnly = false,
 }: BookingCalendarProps) {
   const [selection, setSelection] = useState<{
     unitId: string;
@@ -114,12 +116,19 @@ export function BookingCalendar({
                   {days.map((d) => (
                     <button
                       key={d}
-                      onClick={() => setSelection({ unitId: unit.id, date: d })}
-                      className={`shrink-0 border-l border-gray-100 hover:bg-gray-50 ${
-                        isWeekend(d) ? "bg-amber-50/40" : ""
-                      }`}
+                      disabled={readOnly}
+                      onClick={() =>
+                        !readOnly && setSelection({ unitId: unit.id, date: d })
+                      }
+                      className={`shrink-0 border-l border-gray-100 ${
+                        readOnly ? "cursor-default" : "hover:bg-gray-50"
+                      } ${isWeekend(d) ? "bg-amber-50/40" : ""}`}
                       style={{ width: DAY_WIDTH, height: ROW_HEIGHT }}
-                      aria-label={`إضافة حجز في ${unit.name} يوم ${d}`}
+                      aria-label={
+                        readOnly
+                          ? undefined
+                          : `إضافة حجز في ${unit.name} يوم ${d}`
+                      }
                     />
                   ))}
 
@@ -189,7 +198,7 @@ export function BookingCalendar({
         </span>
       </div>
 
-      {selection && (
+      {!readOnly && selection && (
         <AddBookingDialog
           unitId={selection.unitId}
           unitName={units.find((u) => u.id === selection.unitId)?.name ?? ""}
