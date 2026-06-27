@@ -3,7 +3,14 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { requireRole } from "@/lib/require-role";
 import { revalidatePath } from "next/cache";
-import type { AppUser, Owner, Unit, UnitDailyPrice, UnitStatus } from "@/lib/types";
+import type {
+  AppUser,
+  Owner,
+  Unit,
+  UnitBlock,
+  UnitDailyPrice,
+  UnitStatus,
+} from "@/lib/types";
 import { dateRange } from "@/lib/date-utils";
 
 export interface UnitWithOwner extends Unit {
@@ -258,6 +265,83 @@ export async function upsertDailyPricesAction(
 
   if (error) {
     return { success: false, error: "فشل حفظ الأسعار" };
+  }
+
+  revalidatePath("/admin/units");
+  return { success: true };
+}
+
+export async function getUnitBlocks(unitId: string): Promise<UnitBlock[]> {
+  await requireRole(["admin"]);
+  const supabase = supabaseAdmin();
+
+  const { data, error } = await supabase
+    .from("unit_blocks")
+    .select("*")
+    .eq("unit_id", unitId)
+    .order("start_date", { ascending: true });
+
+  if (error) {
+    throw new Error("فشل تحميل فترات الحجب: " + error.message);
+  }
+
+  return (data ?? []) as UnitBlock[];
+}
+
+/**
+ * يحجب الوحدة عن الحجز لفترة (صيانة، استخدام شخصي...). يستفيد من trigger
+ * موجود (check_block_conflict) يرفض الحجب لو فيه حجز مؤكد بنفس الفترة.
+ */
+export async function createUnitBlockAction(
+  formData: FormData
+): Promise<ActionResult> {
+  await requireRole(["admin"]);
+  const supabase = supabaseAdmin();
+
+  const unitId = formData.get("unit_id") as string;
+  const startDate = formData.get("start_date") as string;
+  const endDate = formData.get("end_date") as string;
+  const reason = (formData.get("reason") as string)?.trim() || null;
+
+  if (!unitId || !startDate || !endDate) {
+    return { success: false, error: "تأكد من تعبئة كل الحقول" };
+  }
+
+  if (endDate < startDate) {
+    return { success: false, error: "تاريخ النهاية يجب أن يكون بعد البداية" };
+  }
+
+  const { error } = await supabase.from("unit_blocks").insert({
+    unit_id: unitId,
+    start_date: startDate,
+    end_date: endDate,
+    reason,
+  });
+
+  if (error) {
+    if (error.message.includes("تعارض")) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "فشل حجب الوحدة" };
+  }
+
+  revalidatePath("/admin/units");
+  return { success: true };
+}
+
+export async function deleteUnitBlockAction(
+  blockId: string
+): Promise<ActionResult> {
+  await requireRole(["admin"]);
+  const supabase = supabaseAdmin();
+
+  const { error } = await supabase
+    .from("unit_blocks")
+    .delete()
+    .eq("id", blockId);
+
+  if (error) {
+    return { success: false, error: "فشل حذف الحجب" };
   }
 
   revalidatePath("/admin/units");

@@ -8,6 +8,7 @@ import type { UnitWithOwner } from "@/app/actions/units";
 import { deleteUnitAction } from "@/app/actions/units";
 import { UnitDialog } from "./unit-dialog";
 import { PricingDialog } from "./pricing-dialog";
+import { BlockDialog } from "./block-dialog";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import {
   Pencil,
   Trash2,
   Tag,
+  Ban,
   Building2,
   MapPin,
   Users as UsersIcon,
@@ -39,6 +41,7 @@ export function UnitsTable({ units, owners, cleaners }: UnitsTableProps) {
   const [editingUnit, setEditingUnit] = useState<UnitWithOwner | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [pricingUnit, setPricingUnit] = useState<UnitWithOwner | null>(null);
+  const [blockingUnit, setBlockingUnit] = useState<UnitWithOwner | null>(null);
 
   function handleDelete(unitId: string) {
     if (!confirm("هل تريد حذف هذه الوحدة؟")) return;
@@ -126,6 +129,13 @@ export function UnitsTable({ units, owners, cleaners }: UnitsTableProps) {
                         <Tag className="size-4" />
                       </button>
                       <button
+                        onClick={() => setBlockingUnit(unit)}
+                        className="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-md transition-colors"
+                        title="حجب"
+                      >
+                        <Ban className="size-4" />
+                      </button>
+                      <button
                         onClick={() => setEditingUnit(unit)}
                         className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
                         title="تعديل"
@@ -178,6 +188,14 @@ export function UnitsTable({ units, owners, cleaners }: UnitsTableProps) {
           unitId={pricingUnit.id}
           unitName={pricingUnit.name}
           onClose={() => setPricingUnit(null)}
+        />
+      )}
+
+      {blockingUnit && (
+        <BlockDialog
+          unitId={blockingUnit.id}
+          unitName={blockingUnit.name}
+          onClose={() => setBlockingUnit(null)}
         />
       )}
     </div>
