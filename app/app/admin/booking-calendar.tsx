@@ -56,7 +56,7 @@ export function BookingCalendar({
   }
 
   return (
-    <div className="border border-gray-200 rounded-lg overflow-hidden">
+    <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
       <div className="overflow-x-auto">
         <div style={{ minWidth: UNIT_COL_WIDTH + days.length * DAY_WIDTH }}>
           {/* رأس الأعمدة: التواريخ */}
@@ -147,7 +147,7 @@ export function BookingCalendar({
                     return (
                       <div
                         key={booking.id}
-                        className={`absolute rounded-md px-2 flex items-center text-white text-xs font-medium overflow-hidden whitespace-nowrap ${colorClass}`}
+                        className={`absolute rounded-md px-2 flex items-center text-white text-xs font-medium overflow-hidden whitespace-nowrap shadow-sm hover:brightness-95 transition-all cursor-default ${colorClass}`}
                         style={{
                           right: left,
                           width: width - 4,

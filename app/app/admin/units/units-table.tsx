@@ -2,16 +2,29 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import type { Owner } from "@/lib/types";
 import type { UnitWithOwner } from "@/app/actions/units";
 import { deleteUnitAction } from "@/app/actions/units";
 import { UnitDialog } from "./unit-dialog";
 import { PricingDialog } from "./pricing-dialog";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  Tag,
+  Building2,
+  MapPin,
+  Users as UsersIcon,
+} from "lucide-react";
 
-const STATUS_LABELS: Record<string, string> = {
-  active: "نشطة",
-  inactive: "غير نشطة",
-  maintenance: "صيانة",
+const STATUS_CONFIG: Record<string, { label: string; tone: "green" | "gray" | "amber" }> = {
+  active: { label: "نشطة", tone: "green" },
+  inactive: { label: "غير نشطة", tone: "gray" },
+  maintenance: { label: "صيانة", tone: "amber" },
 };
 
 interface UnitsTableProps {
@@ -25,17 +38,16 @@ export function UnitsTable({ units, owners }: UnitsTableProps) {
   const [editingUnit, setEditingUnit] = useState<UnitWithOwner | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [pricingUnit, setPricingUnit] = useState<UnitWithOwner | null>(null);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   function handleDelete(unitId: string) {
     if (!confirm("هل تريد حذف هذه الوحدة؟")) return;
-    setDeleteError(null);
     startTransition(async () => {
       const result = await deleteUnitAction(unitId);
       if (result.success) {
+        toast.success("تم حذف الوحدة");
         router.refresh();
       } else {
-        setDeleteError(result.error ?? "حدث خطأ غير متوقع");
+        toast.error(result.error ?? "حدث خطأ غير متوقع");
       }
     });
   }
@@ -43,89 +55,106 @@ export function UnitsTable({ units, owners }: UnitsTableProps) {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-base font-medium text-gray-700">الوحدات</h2>
-        <button
-          onClick={() => setShowAddDialog(true)}
-          className="px-3 py-1.5 bg-gray-900 text-white rounded-lg text-sm font-medium"
-        >
+        <h2 className="text-base font-semibold text-gray-800">قائمة الوحدات</h2>
+        <Button onClick={() => setShowAddDialog(true)}>
+          <Plus className="size-4" />
           إضافة وحدة
-        </button>
+        </Button>
       </div>
 
-      {deleteError && (
-        <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-3">
-          {deleteError}
-        </p>
-      )}
-
-      <div className="border border-gray-200 rounded-lg overflow-hidden">
+      <Card className="overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-gray-500">
+          <thead className="bg-gray-50 text-gray-500 border-b border-gray-200">
             <tr>
-              <th className="text-right px-3 py-2 font-medium">الاسم</th>
-              <th className="text-right px-3 py-2 font-medium">المالك</th>
-              <th className="text-right px-3 py-2 font-medium">الحالة</th>
-              <th className="text-right px-3 py-2 font-medium">السعة</th>
-              <th className="text-right px-3 py-2 font-medium">الموقع</th>
-              <th className="text-right px-3 py-2 font-medium"></th>
+              <th className="text-right px-4 py-3 font-medium">الاسم</th>
+              <th className="text-right px-4 py-3 font-medium">المالك</th>
+              <th className="text-right px-4 py-3 font-medium">الحالة</th>
+              <th className="text-right px-4 py-3 font-medium">السعة</th>
+              <th className="text-right px-4 py-3 font-medium">الموقع</th>
+              <th className="text-right px-4 py-3 font-medium"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {units.map((unit) => (
-              <tr key={unit.id}>
-                <td className="px-3 py-2 font-medium">{unit.name}</td>
-                <td className="px-3 py-2 text-gray-600">
-                  {unit.owner?.name ?? "—"}
-                </td>
-                <td className="px-3 py-2 text-gray-600">
-                  {STATUS_LABELS[unit.status] ?? unit.status}
-                </td>
-                <td className="px-3 py-2 text-gray-600">
-                  {unit.capacity ?? "—"}
-                </td>
-                <td className="px-3 py-2 text-gray-600">
-                  {unit.location ?? "—"}
-                </td>
-                <td className="px-3 py-2 whitespace-nowrap">
-                  <div className="flex gap-2 justify-end">
-                    <button
-                      onClick={() => setPricingUnit(unit)}
-                      className="text-blue-600 hover:underline"
-                    >
-                      التسعير
-                    </button>
-                    <button
-                      onClick={() => setEditingUnit(unit)}
-                      className="text-gray-600 hover:underline"
-                    >
-                      تعديل
-                    </button>
-                    <button
-                      disabled={isPending}
-                      onClick={() => handleDelete(unit.id)}
-                      className="text-red-600 hover:underline disabled:opacity-50"
-                    >
-                      حذف
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+            {units.map((unit) => {
+              const status = STATUS_CONFIG[unit.status] ?? {
+                label: unit.status,
+                tone: "gray" as const,
+              };
+              return (
+                <tr key={unit.id} className="hover:bg-gray-50/60 transition-colors">
+                  <td className="px-4 py-3 font-medium text-gray-900">
+                    <div className="flex items-center gap-2">
+                      <Building2 className="size-4 text-gray-400" />
+                      {unit.name}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-gray-600">
+                    {unit.owner?.name ?? "—"}
+                  </td>
+                  <td className="px-4 py-3">
+                    <Badge tone={status.tone}>{status.label}</Badge>
+                  </td>
+                  <td className="px-4 py-3 text-gray-600">
+                    {unit.capacity ? (
+                      <span className="flex items-center gap-1">
+                        <UsersIcon className="size-3.5 text-gray-400" />
+                        {unit.capacity}
+                      </span>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600">
+                    {unit.location ? (
+                      <span className="flex items-center gap-1">
+                        <MapPin className="size-3.5 text-gray-400" />
+                        {unit.location}
+                      </span>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex gap-1 justify-end">
+                      <button
+                        onClick={() => setPricingUnit(unit)}
+                        className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors"
+                        title="التسعير"
+                      >
+                        <Tag className="size-4" />
+                      </button>
+                      <button
+                        onClick={() => setEditingUnit(unit)}
+                        className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                        title="تعديل"
+                      >
+                        <Pencil className="size-4" />
+                      </button>
+                      <button
+                        disabled={isPending}
+                        onClick={() => handleDelete(unit.id)}
+                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors disabled:opacity-50"
+                        title="حذف"
+                      >
+                        <Trash2 className="size-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
 
         {units.length === 0 && (
-          <div className="p-8 text-center text-gray-400 text-sm">
+          <div className="p-10 text-center text-gray-400 text-sm">
             لا توجد وحدات مضافة بعد
           </div>
         )}
-      </div>
+      </Card>
 
       {showAddDialog && (
-        <UnitDialog
-          owners={owners}
-          onClose={() => setShowAddDialog(false)}
-        />
+        <UnitDialog owners={owners} onClose={() => setShowAddDialog(false)} />
       )}
 
       {editingUnit && (

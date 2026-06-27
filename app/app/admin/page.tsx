@@ -1,9 +1,10 @@
-import { requireRole } from "@/lib/require-role";
-import { LogoutButton } from "@/components/logout-button";
 import { getCalendarData } from "@/app/actions/bookings";
 import { addDays, todayString } from "@/lib/date-utils";
 import { BookingCalendar } from "./booking-calendar";
-import { AdminNav } from "./admin-nav";
+import { PageHeader } from "@/components/ui/page-header";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { ChevronRight, ChevronLeft, CalendarDays } from "lucide-react";
 
 const DAYS_SHOWN = 14;
 
@@ -12,7 +13,6 @@ interface AdminPageProps {
 }
 
 export default async function AdminPage({ searchParams }: AdminPageProps) {
-  const session = await requireRole(["admin"]);
   const params = await searchParams;
 
   const startDate = params.start || todayString();
@@ -24,39 +24,33 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const nextStart = addDays(startDate, DAYS_SHOWN);
 
   return (
-    <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-semibold">أهلاً، {session.fullName}</h1>
-        <LogoutButton />
-      </div>
-
-      <AdminNav active="/admin" />
-
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-base font-medium text-gray-700">
-          التقويم — كل الوحدات
-        </h2>
-        <div className="flex gap-2 text-sm">
-          <a
-            href={`/admin?start=${prevStart}`}
-            className="px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50"
-          >
-            السابق
-          </a>
-          <a
-            href={`/admin?start=${todayString()}`}
-            className="px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50"
-          >
-            اليوم
-          </a>
-          <a
-            href={`/admin?start=${nextStart}`}
-            className="px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50"
-          >
-            التالي
-          </a>
-        </div>
-      </div>
+    <div>
+      <PageHeader
+        title="التقويم"
+        description="عرض كل الوحدات والحجوزات — اضغط على أي خلية فاضية لإضافة حجز جديد"
+        action={
+          <div className="flex gap-2">
+            <Link href={`/admin?start=${prevStart}`}>
+              <Button variant="secondary" size="sm">
+                <ChevronRight className="size-4" />
+                السابق
+              </Button>
+            </Link>
+            <Link href={`/admin?start=${todayString()}`}>
+              <Button variant="secondary" size="sm">
+                <CalendarDays className="size-4" />
+                اليوم
+              </Button>
+            </Link>
+            <Link href={`/admin?start=${nextStart}`}>
+              <Button variant="secondary" size="sm">
+                التالي
+                <ChevronLeft className="size-4" />
+              </Button>
+            </Link>
+          </div>
+        }
+      />
 
       <BookingCalendar
         units={units}
@@ -64,10 +58,6 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         startDate={startDate}
         daysCount={DAYS_SHOWN}
       />
-
-      <p className="text-xs text-gray-400 mt-3">
-        اضغط على أي خلية فاضية بالتقويم لإضافة حجز جديد لتلك الوحدة والتاريخ
-      </p>
-    </main>
+    </div>
   );
 }

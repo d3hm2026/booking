@@ -3,6 +3,9 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { loginAction } from "@/app/actions/auth";
+import { Button } from "@/components/ui/button";
+import { inputClass, Field } from "@/components/ui/field";
+import { Building2 } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -25,61 +28,61 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex-1 flex items-center justify-center p-6">
-      <div className="w-full max-w-sm">
-        <h1 className="text-xl font-semibold text-center mb-1">
+    <main className="flex-1 flex items-center justify-center p-6 bg-gradient-to-b from-indigo-50 via-white to-white">
+      <div className="w-full max-w-sm animate-fade-in">
+        <div className="flex justify-center mb-5">
+          <div className="bg-indigo-600 text-white rounded-2xl p-3.5 shadow-lg shadow-indigo-200">
+            <Building2 className="size-7" />
+          </div>
+        </div>
+
+        <h1 className="text-xl font-bold text-center text-gray-900 mb-1">
           نظام إدارة الاستراحات والشاليهات
         </h1>
-        <p className="text-sm text-gray-500 text-center mb-6">
+        <p className="text-sm text-gray-500 text-center mb-7">
           سجّل الدخول برقم الجوال والرمز السري
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="phone" className="block text-sm font-medium mb-1">
-              رقم الجوال
-            </label>
-            <input
-              id="phone"
-              name="phone"
-              type="tel"
-              inputMode="numeric"
-              required
-              autoFocus
-              placeholder="05xxxxxxxx"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-gray-400"
-              dir="ltr"
-            />
-          </div>
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Field label="رقم الجوال">
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                inputMode="numeric"
+                required
+                autoFocus
+                placeholder="05xxxxxxxx"
+                className={inputClass}
+                dir="ltr"
+              />
+            </Field>
 
-          <div>
-            <label htmlFor="code" className="block text-sm font-medium mb-1">
-              الرمز السري
-            </label>
-            <input
-              id="code"
-              name="code"
-              type="password"
-              inputMode="numeric"
-              required
-              placeholder="••••"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-gray-400"
-              dir="ltr"
-            />
-          </div>
+            <Field label="الرمز السري">
+              <input
+                id="code"
+                name="code"
+                type="password"
+                inputMode="numeric"
+                required
+                placeholder="••••"
+                className={inputClass}
+                dir="ltr"
+              />
+            </Field>
 
-          {error && (
-            <p className="text-sm text-red-600 text-center">{error}</p>
-          )}
+            {error && (
+              <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 text-center">
+                {error}
+              </p>
+            )}
 
-          <button
-            type="submit"
-            disabled={isPending}
-            className="w-full bg-gray-900 text-white rounded-lg py-2.5 font-medium disabled:opacity-50"
-          >
-            {isPending ? "جارٍ تسجيل الدخول..." : "تسجيل الدخول"}
-          </button>
-        </form>
+            <Button type="submit" loading={isPending} className="w-full">
+              {isPending ? "جارٍ تسجيل الدخول..." : "تسجيل الدخول"}
+            </Button>
+          </form>
+        </div>
       </div>
     </main>
   );

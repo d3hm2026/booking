@@ -1,23 +1,47 @@
-import { requireRole } from "@/lib/require-role";
-import { LogoutButton } from "@/components/logout-button";
-import { AdminNav } from "../admin-nav";
 import { getUnits, getOwners } from "@/app/actions/units";
 import { UnitsTable } from "./units-table";
+import { PageHeader } from "@/components/ui/page-header";
+import { StatCard } from "@/components/ui/stat-card";
+import { Building2, CheckCircle2, Wrench, UserSquare2 } from "lucide-react";
 
 export default async function UnitsPage() {
-  const session = await requireRole(["admin"]);
   const [units, owners] = await Promise.all([getUnits(), getOwners()]);
 
+  const activeCount = units.filter((u) => u.status === "active").length;
+  const maintenanceCount = units.filter(
+    (u) => u.status === "maintenance"
+  ).length;
+
   return (
-    <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-semibold">أهلاً، {session.fullName}</h1>
-        <LogoutButton />
+    <div>
+      <PageHeader
+        title="الوحدات"
+        description="إدارة الاستراحات والشاليهات، الملاك، والتسعير اليومي"
+      />
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <StatCard icon={Building2} label="إجمالي الوحدات" value={units.length} />
+        <StatCard
+          icon={CheckCircle2}
+          label="نشطة"
+          value={activeCount}
+          tone="emerald"
+        />
+        <StatCard
+          icon={Wrench}
+          label="تحت الصيانة"
+          value={maintenanceCount}
+          tone="amber"
+        />
+        <StatCard
+          icon={UserSquare2}
+          label="الملاك"
+          value={owners.length}
+          tone="gray"
+        />
       </div>
 
-      <AdminNav active="/admin/units" />
-
       <UnitsTable units={units} owners={owners} />
-    </main>
+    </div>
   );
 }
