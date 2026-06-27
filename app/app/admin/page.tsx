@@ -3,6 +3,7 @@ import { LogoutButton } from "@/components/logout-button";
 import { getCalendarData } from "@/app/actions/bookings";
 import { addDays, todayString } from "@/lib/date-utils";
 import { BookingCalendar } from "./booking-calendar";
+import { AdminNav } from "./admin-nav";
 
 const DAYS_SHOWN = 14;
 
@@ -28,6 +29,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         <h1 className="text-xl font-semibold">أهلاً، {session.fullName}</h1>
         <LogoutButton />
       </div>
+
+      <AdminNav active="/admin" />
 
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-base font-medium text-gray-700">
