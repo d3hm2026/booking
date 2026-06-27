@@ -37,6 +37,7 @@ export interface Unit {
   status: UnitStatus;
   capacity: number | null;
   notes: string | null;
+  default_cleaner_id: string | null;
   created_at: string;
 }
 

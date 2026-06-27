@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import type { Owner } from "@/lib/types";
+import type { AppUser, Owner } from "@/lib/types";
 import type { UnitWithOwner } from "@/app/actions/units";
 import {
   createUnitAction,
@@ -17,11 +17,12 @@ import { UserPlus2, X } from "lucide-react";
 
 interface UnitDialogProps {
   owners: Owner[];
+  cleaners: AppUser[];
   unit?: UnitWithOwner;
   onClose: () => void;
 }
 
-export function UnitDialog({ owners, unit, onClose }: UnitDialogProps) {
+export function UnitDialog({ owners, cleaners, unit, onClose }: UnitDialogProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [showNewOwner, setShowNewOwner] = useState(false);
@@ -194,6 +195,21 @@ export function UnitDialog({ owners, unit, onClose }: UnitDialogProps) {
             />
           </Field>
         </div>
+
+        <Field label="عامل التنظيف المسؤول (اختياري)">
+          <select
+            name="default_cleaner_id"
+            defaultValue={unit?.default_cleaner_id ?? ""}
+            className={inputClass}
+          >
+            <option value="">بدون تحديد</option>
+            {cleaners.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.full_name}
+              </option>
+            ))}
+          </select>
+        </Field>
 
         <Field label="الموقع (اختياري)">
           <input

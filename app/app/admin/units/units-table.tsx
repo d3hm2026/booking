@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import type { Owner } from "@/lib/types";
+import type { AppUser, Owner } from "@/lib/types";
 import type { UnitWithOwner } from "@/app/actions/units";
 import { deleteUnitAction } from "@/app/actions/units";
 import { UnitDialog } from "./unit-dialog";
@@ -30,9 +30,10 @@ const STATUS_CONFIG: Record<string, { label: string; tone: "green" | "gray" | "a
 interface UnitsTableProps {
   units: UnitWithOwner[];
   owners: Owner[];
+  cleaners: AppUser[];
 }
 
-export function UnitsTable({ units, owners }: UnitsTableProps) {
+export function UnitsTable({ units, owners, cleaners }: UnitsTableProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [editingUnit, setEditingUnit] = useState<UnitWithOwner | null>(null);
@@ -156,12 +157,17 @@ export function UnitsTable({ units, owners }: UnitsTableProps) {
       </Card>
 
       {showAddDialog && (
-        <UnitDialog owners={owners} onClose={() => setShowAddDialog(false)} />
+        <UnitDialog
+          owners={owners}
+          cleaners={cleaners}
+          onClose={() => setShowAddDialog(false)}
+        />
       )}
 
       {editingUnit && (
         <UnitDialog
           owners={owners}
+          cleaners={cleaners}
           unit={editingUnit}
           onClose={() => setEditingUnit(null)}
         />

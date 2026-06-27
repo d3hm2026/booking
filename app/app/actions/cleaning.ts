@@ -14,13 +14,14 @@ export interface CleaningTaskWithUnit extends CleaningTask {
 export async function getCleaningTasksForCleaner(): Promise<
   CleaningTaskWithUnit[]
 > {
-  await requireRole(["cleaner"]);
+  const session = await requireRole(["cleaner"]);
   const supabase = supabaseAdmin();
 
   const { data, error } = await supabase
     .from("cleaning_tasks")
     .select("*, unit:units(*)")
     .eq("status", "pending")
+    .eq("assigned_user_id", session.userId)
     .order("created_at", { ascending: true });
 
   if (error) {

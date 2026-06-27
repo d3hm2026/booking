@@ -3,7 +3,7 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { requireRole } from "@/lib/require-role";
 import { revalidatePath } from "next/cache";
-import type { Owner, Unit, UnitDailyPrice, UnitStatus } from "@/lib/types";
+import type { AppUser, Owner, Unit, UnitDailyPrice, UnitStatus } from "@/lib/types";
 import { dateRange } from "@/lib/date-utils";
 
 export interface UnitWithOwner extends Unit {
@@ -40,6 +40,24 @@ export async function getOwners(): Promise<Owner[]> {
   }
 
   return (data ?? []) as Owner[];
+}
+
+export async function getCleaners(): Promise<AppUser[]> {
+  await requireRole(["admin"]);
+  const supabase = supabaseAdmin();
+
+  const { data, error } = await supabase
+    .from("users")
+    .select("*")
+    .eq("role", "cleaner")
+    .eq("is_active", true)
+    .order("full_name", { ascending: true });
+
+  if (error) {
+    throw new Error("فشل تحميل عمال التنظيف: " + error.message);
+  }
+
+  return (data ?? []) as AppUser[];
 }
 
 export interface ActionResult {
@@ -94,6 +112,7 @@ export async function createUnitAction(
   const capacityRaw = formData.get("capacity");
   const capacity = capacityRaw ? Number(capacityRaw) : null;
   const notes = (formData.get("notes") as string)?.trim() || null;
+  const defaultCleanerId = (formData.get("default_cleaner_id") as string) || null;
 
   if (!name) {
     return { success: false, error: "أدخل اسم الوحدة" };
@@ -106,6 +125,7 @@ export async function createUnitAction(
     status,
     capacity,
     notes,
+    default_cleaner_id: defaultCleanerId,
   });
 
   if (error) {
@@ -130,6 +150,7 @@ export async function updateUnitAction(
   const capacityRaw = formData.get("capacity");
   const capacity = capacityRaw ? Number(capacityRaw) : null;
   const notes = (formData.get("notes") as string)?.trim() || null;
+  const defaultCleanerId = (formData.get("default_cleaner_id") as string) || null;
 
   if (!name) {
     return { success: false, error: "أدخل اسم الوحدة" };
@@ -137,7 +158,15 @@ export async function updateUnitAction(
 
   const { error } = await supabase
     .from("units")
-    .update({ name, owner_id: ownerId, location, status, capacity, notes })
+    .update({
+      name,
+      owner_id: ownerId,
+      location,
+      status,
+      capacity,
+      notes,
+      default_cleaner_id: defaultCleanerId,
+    })
     .eq("id", unitId);
 
   if (error) {

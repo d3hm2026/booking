@@ -1,11 +1,15 @@
-import { getUnits, getOwners } from "@/app/actions/units";
+import { getUnits, getOwners, getCleaners } from "@/app/actions/units";
 import { UnitsTable } from "./units-table";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import { Building2, CheckCircle2, Wrench, UserSquare2 } from "lucide-react";
 
 export default async function UnitsPage() {
-  const [units, owners] = await Promise.all([getUnits(), getOwners()]);
+  const [units, owners, cleaners] = await Promise.all([
+    getUnits(),
+    getOwners(),
+    getCleaners(),
+  ]);
 
   const activeCount = units.filter((u) => u.status === "active").length;
   const maintenanceCount = units.filter(
@@ -41,7 +45,7 @@ export default async function UnitsPage() {
         />
       </div>
 
-      <UnitsTable units={units} owners={owners} />
+      <UnitsTable units={units} owners={owners} cleaners={cleaners} />
     </div>
   );
 }
