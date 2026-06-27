@@ -5,14 +5,18 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { BookingWithUnit } from "@/app/actions/bookings";
 import { updateBookingAction, cancelBookingAction } from "@/app/actions/bookings";
-import { getPaymentsForBooking, addPaymentAction } from "@/app/actions/payments";
-import type { Payment, PaymentStatus } from "@/lib/types";
+import {
+  getPaymentsForBooking,
+  addPaymentAction,
+  updateDepositStatusAction,
+} from "@/app/actions/payments";
+import type { Payment, PaymentStatus, DepositStatus } from "@/lib/types";
 import { Dialog } from "@/components/ui/dialog";
 import { Field, inputClass } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { todayString } from "@/lib/date-utils";
-import { Wallet } from "lucide-react";
+import { Wallet, ShieldCheck } from "lucide-react";
 
 interface BookingDetailDialogProps {
   booking: BookingWithUnit;
@@ -23,6 +27,13 @@ const PAYMENT_STATUS_LABELS: Record<PaymentStatus, { label: string; tone: "green
   paid: { label: "مدفوع بالكامل", tone: "green" },
   partial: { label: "دفعة جزئية", tone: "amber" },
   unpaid: { label: "غير مدفوع", tone: "gray" },
+};
+
+const DEPOSIT_STATUS_LABELS: Record<DepositStatus, { label: string; tone: "green" | "amber" | "red" | "gray" }> = {
+  none: { label: "بدون تأمين", tone: "gray" },
+  held: { label: "محجوز", tone: "amber" },
+  returned: { label: "مُرجَع", tone: "green" },
+  forfeited: { label: "مُصادَر", tone: "red" },
 };
 
 export function BookingDetailDialog({ booking, onClose }: BookingDetailDialogProps) {
@@ -36,6 +47,8 @@ export function BookingDetailDialog({ booking, onClose }: BookingDetailDialogPro
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>(booking.payment_status);
   const [showAddPayment, setShowAddPayment] = useState(false);
   const [isAddingPayment, startAddingPayment] = useTransition();
+  const [depositStatus, setDepositStatus] = useState<DepositStatus>(booking.deposit_status);
+  const [isUpdatingDeposit, startUpdatingDeposit] = useTransition();
 
   useEffect(() => {
     getPaymentsForBooking(booking.id)
@@ -95,6 +108,25 @@ export function BookingDetailDialog({ booking, onClose }: BookingDetailDialogPro
             : "unpaid"
         );
         setShowAddPayment(false);
+        router.refresh();
+      } else {
+        toast.error(result.error ?? "حدث خطأ غير متوقع");
+      }
+    });
+  }
+
+  function handleDepositAction(newStatus: "returned" | "forfeited") {
+    const confirmText =
+      newStatus === "returned"
+        ? "هل تريد تأكيد إرجاع التأمين للعميل؟"
+        : "هل تريد تأكيد مصادرة التأمين؟";
+    if (!confirm(confirmText)) return;
+
+    startUpdatingDeposit(async () => {
+      const result = await updateDepositStatusAction(booking.id, newStatus);
+      if (result.success) {
+        toast.success(newStatus === "returned" ? "تم إرجاع التأمين" : "تم مصادرة التأمين");
+        setDepositStatus(newStatus);
         router.refresh();
       } else {
         toast.error(result.error ?? "حدث خطأ غير متوقع");
@@ -309,6 +341,47 @@ export function BookingDetailDialog({ booking, onClose }: BookingDetailDialogPro
           </>
         )}
       </div>
+
+      {booking.deposit_status !== "none" && (
+        <div className="border-t border-gray-200 mt-4 pt-3">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+              <ShieldCheck className="size-4 text-gray-400" />
+              التأمين
+            </h3>
+            <Badge tone={DEPOSIT_STATUS_LABELS[depositStatus].tone}>
+              {DEPOSIT_STATUS_LABELS[depositStatus].label}
+            </Badge>
+          </div>
+
+          <p className="text-xs text-gray-500 mb-2" dir="ltr">
+            <span className="flex justify-end">
+              مبلغ التأمين: {Number(booking.deposit_amount).toLocaleString("ar")} ريال
+            </span>
+          </p>
+
+          {depositStatus === "held" && (
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="secondary"
+                loading={isUpdatingDeposit}
+                onClick={() => handleDepositAction("returned")}
+              >
+                إرجاع التأمين
+              </Button>
+              <Button
+                size="sm"
+                variant="danger"
+                loading={isUpdatingDeposit}
+                onClick={() => handleDepositAction("forfeited")}
+              >
+                مصادرة التأمين
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
 
       {isConfirmed && (
         <div className="border-t border-gray-200 mt-4 pt-3">
