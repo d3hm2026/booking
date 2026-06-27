@@ -1,20 +1,36 @@
 import { requireRole } from "@/lib/require-role";
-import { LogoutButton } from "@/components/logout-button";
+import { getCleaningTasksForCleaner } from "@/app/actions/cleaning";
+import { Topbar } from "@/components/ui/topbar";
+import { PageHeader } from "@/components/ui/page-header";
+import { StatCard } from "@/components/ui/stat-card";
+import { CleaningTasksList } from "./cleaning-tasks-list";
+import { Sparkles } from "lucide-react";
 
 export default async function CleanerPage() {
   const session = await requireRole(["cleaner"]);
+  const tasks = await getCleaningTasksForCleaner();
 
   return (
-    <main className="flex-1 p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-semibold">
-          أهلاً، {session.fullName}
-        </h1>
-        <LogoutButton />
-      </div>
-      <p className="text-gray-500">
-        مهام التنظيف — قيد الإعداد (رفع الصور بعد التنظيف قريباً)
-      </p>
-    </main>
+    <div className="min-h-screen bg-gray-50">
+      <Topbar title="مهام التنظيف" fullName={session.fullName} />
+
+      <main className="max-w-2xl mx-auto p-4 sm:p-6">
+        <PageHeader
+          title="المهام المعلّقة"
+          description="ارفع صورة بعد تنظيف الوحدة لإغلاق المهمة"
+        />
+
+        <div className="mb-6">
+          <StatCard
+            icon={Sparkles}
+            label="مهام بانتظار التنظيف"
+            value={tasks.length}
+            tone="amber"
+          />
+        </div>
+
+        <CleaningTasksList tasks={tasks} />
+      </main>
+    </div>
   );
 }
