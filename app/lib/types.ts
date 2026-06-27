@@ -113,3 +113,13 @@ export interface BookingLog {
   note: string | null;
   created_at: string;
 }
+
+export interface Expense {
+  id: string;
+  unit_id: string;
+  category: string;
+  amount: number;
+  expense_date: string;
+  notes: string | null;
+  created_at: string;
+}
