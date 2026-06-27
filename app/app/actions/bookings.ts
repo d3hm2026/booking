@@ -3,7 +3,7 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { requireRole } from "@/lib/require-role";
 import { revalidatePath } from "next/cache";
-import type { Unit, Booking } from "@/lib/types";
+import type { Unit, Booking, BookingStatus } from "@/lib/types";
 
 export interface CalendarData {
   units: Unit[];
@@ -110,5 +110,46 @@ export async function addBookingAction(
   }
 
   revalidatePath("/admin");
+  revalidatePath("/admin/calendar");
+  revalidatePath("/admin/bookings");
   return { success: true };
+}
+
+export interface BookingWithUnit extends Booking {
+  unit: { name: string } | null;
+}
+
+export interface BookingFilters {
+  unitId?: string;
+  status?: BookingStatus;
+}
+
+/**
+ * يجلب الحجوزات (مع اسم الوحدة) لصفحة إدارة الحجوزات، مرتبة بأقرب تاريخ دخول.
+ */
+export async function getBookingsList(
+  filters: BookingFilters = {}
+): Promise<BookingWithUnit[]> {
+  await requireRole(["admin"]);
+  const supabase = supabaseAdmin();
+
+  let query = supabase
+    .from("bookings")
+    .select("*, unit:units(name)")
+    .order("check_in", { ascending: false });
+
+  if (filters.unitId) {
+    query = query.eq("unit_id", filters.unitId);
+  }
+  if (filters.status) {
+    query = query.eq("booking_status", filters.status);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    throw new Error("فشل تحميل الحجوزات: " + error.message);
+  }
+
+  return (data ?? []) as unknown as BookingWithUnit[];
 }
