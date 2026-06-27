@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { loginAction } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
 import { inputClass, Field } from "@/components/ui/field";
-import { Building2 } from "lucide-react";
+import { LogoMark } from "@/components/logo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,7 +32,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm animate-fade-in">
         <div className="flex justify-center mb-5">
           <div className="bg-indigo-600 text-white rounded-2xl p-3.5 shadow-lg shadow-indigo-200">
-            <Building2 className="size-7" />
+            <LogoMark className="size-7" />
           </div>
         </div>
 

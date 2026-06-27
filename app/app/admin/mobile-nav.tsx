@@ -16,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { logoutAction } from "@/app/actions/auth";
+import { LogoBadge } from "@/components/logo";
 
 const MAIN_LINKS = [
   { href: "/admin", label: "الرئيسية", icon: LayoutDashboard },
@@ -43,9 +44,7 @@ export function MobileNav({ fullName }: { fullName: string }) {
     <>
       <header className="md:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 z-20">
         <div className="flex items-center gap-2">
-          <div className="bg-indigo-600 text-white rounded-lg p-1.5">
-            <Building2 className="size-4" />
-          </div>
+          <LogoBadge size="sm" />
           <span className="text-sm font-bold text-gray-900">إدارة الشاليهات</span>
         </div>
         <span className="text-xs text-gray-400 truncate max-w-[110px]">{fullName}</span>

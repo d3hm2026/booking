@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { logoutAction } from "@/app/actions/auth";
 import { MobileNav } from "./mobile-nav";
+import { LogoBadge } from "@/components/logo";
 
 const LINKS = [
   { href: "/admin", label: "الرئيسية", icon: LayoutDashboard },
@@ -38,9 +39,7 @@ export function AdminShell({
     <div className="flex min-h-screen bg-gray-50">
       <aside className="hidden md:flex w-60 shrink-0 border-l border-gray-200 bg-white flex-col">
         <div className="px-5 py-5 border-b border-gray-100 flex items-center gap-2.5">
-          <div className="bg-indigo-600 text-white rounded-lg p-2 shrink-0">
-            <Building2 className="size-5" />
-          </div>
+          <LogoBadge />
           <div className="min-w-0">
             <h1 className="text-sm font-bold text-gray-900 truncate">
               إدارة الشاليهات
