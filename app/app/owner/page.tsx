@@ -3,6 +3,7 @@ import { getOwnerDashboardData } from "@/app/actions/owner";
 import { addDays, todayString } from "@/lib/date-utils";
 import { BookingCalendar } from "@/app/admin/booking-calendar";
 import { Topbar } from "@/components/ui/topbar";
+import { OwnerNav } from "./owner-nav";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import { Card } from "@/components/ui/card";
@@ -40,6 +41,8 @@ export default async function OwnerPage({ searchParams }: OwnerPageProps) {
       <Topbar title="لوحة المالك" fullName={session.fullName} />
 
       <main className="max-w-4xl mx-auto p-4 sm:p-6">
+        <OwnerNav active="/owner" />
+
         <PageHeader title="نظرة عامة" description="وحداتك، حجوزاتها، ومهام التنظيف" />
 
         <div className="grid grid-cols-3 gap-3 mb-6">
