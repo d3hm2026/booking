@@ -115,6 +115,101 @@ export async function addBookingAction(
   return { success: true };
 }
 
+/**
+ * يعدّل بيانات حجز قائم (التواريخ، بيانات العميل، السعر، الملاحظات).
+ * يستفيد من trigger فحص التعارض الموجود أصلاً (يعمل على before update أيضاً).
+ */
+export async function updateBookingAction(
+  bookingId: string,
+  formData: FormData
+): Promise<AddBookingResult> {
+  await requireRole(["admin"]);
+  const supabase = supabaseAdmin();
+
+  const guestName = (formData.get("guest_name") as string)?.trim();
+  const guestPhone = (formData.get("guest_phone") as string)?.trim();
+  const checkIn = formData.get("check_in") as string;
+  const checkOut = formData.get("check_out") as string;
+  const totalPrice = Number(formData.get("total_price"));
+  const notes = (formData.get("notes") as string)?.trim() || null;
+
+  if (!guestName || !guestPhone || !checkIn || !checkOut) {
+    return { success: false, error: "تأكد من تعبئة كل الحقول المطلوبة" };
+  }
+
+  if (checkOut <= checkIn) {
+    return {
+      success: false,
+      error: "تاريخ الخروج يجب أن يكون بعد تاريخ الدخول",
+    };
+  }
+
+  if (!Number.isFinite(totalPrice) || totalPrice < 0) {
+    return { success: false, error: "مبلغ الحجز غير صحيح" };
+  }
+
+  const { error } = await supabase
+    .from("bookings")
+    .update({
+      guest_name: guestName,
+      guest_phone: guestPhone,
+      check_in: checkIn,
+      check_out: checkOut,
+      total_price: totalPrice,
+      notes,
+    })
+    .eq("id", bookingId);
+
+  if (error) {
+    if (error.message.includes("تعارض")) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "حدث خطأ أثناء تعديل الحجز" };
+  }
+
+  await supabase.from("booking_logs").insert({
+    booking_id: bookingId,
+    action: "updated",
+    note: "تم تعديل بيانات الحجز",
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/calendar");
+  revalidatePath("/admin/bookings");
+  return { success: true };
+}
+
+/**
+ * يلغي حجزاً (booking_status='cancelled')، بدون تعديل التأمين —
+ * يتعامل الأدمن مع التأمين بشكل مستقل عبر إجراء استرجاع/مصادرة.
+ */
+export async function cancelBookingAction(
+  bookingId: string
+): Promise<AddBookingResult> {
+  await requireRole(["admin"]);
+  const supabase = supabaseAdmin();
+
+  const { error } = await supabase
+    .from("bookings")
+    .update({ booking_status: "cancelled" })
+    .eq("id", bookingId);
+
+  if (error) {
+    return { success: false, error: "فشل إلغاء الحجز" };
+  }
+
+  await supabase.from("booking_logs").insert({
+    booking_id: bookingId,
+    action: "cancelled",
+    note: "تم إلغاء الحجز",
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/calendar");
+  revalidatePath("/admin/bookings");
+  return { success: true };
+}
+
 export interface BookingWithUnit extends Booking {
   unit: { name: string } | null;
 }

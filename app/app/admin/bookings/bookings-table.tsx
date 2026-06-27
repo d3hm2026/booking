@@ -4,10 +4,11 @@ import { useState } from "react";
 import type { BookingWithUnit } from "@/app/actions/bookings";
 import type { UnitWithOwner } from "@/app/actions/units";
 import { NewBookingDialog } from "./new-booking-dialog";
+import { BookingDetailDialog } from "./booking-detail-dialog";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus, Building2 } from "lucide-react";
+import { Plus, Building2, Eye } from "lucide-react";
 
 const BOOKING_STATUS_CONFIG: Record<
   string,
@@ -34,6 +35,7 @@ interface BookingsTableProps {
 
 export function BookingsTable({ bookings, units }: BookingsTableProps) {
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [detailBooking, setDetailBooking] = useState<BookingWithUnit | null>(null);
 
   return (
     <div>
@@ -58,6 +60,7 @@ export function BookingsTable({ bookings, units }: BookingsTableProps) {
                 <th className="text-right px-4 py-3 font-medium">الحالة</th>
                 <th className="text-right px-4 py-3 font-medium">الدفع</th>
                 <th className="text-right px-4 py-3 font-medium">المبلغ</th>
+                <th className="text-right px-4 py-3 font-medium"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -99,6 +102,15 @@ export function BookingsTable({ bookings, units }: BookingsTableProps) {
                         {Number(booking.total_price).toLocaleString("ar")} ريال
                       </span>
                     </td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => setDetailBooking(booking)}
+                        className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors"
+                        title="تفاصيل الحجز"
+                      >
+                        <Eye className="size-4" />
+                      </button>
+                    </td>
                   </tr>
                 );
               })}
@@ -115,6 +127,13 @@ export function BookingsTable({ bookings, units }: BookingsTableProps) {
 
       {showAddDialog && (
         <NewBookingDialog units={units} onClose={() => setShowAddDialog(false)} />
+      )}
+
+      {detailBooking && (
+        <BookingDetailDialog
+          booking={detailBooking}
+          onClose={() => setDetailBooking(null)}
+        />
       )}
     </div>
   );
